@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SDMTS Part 1 Static Data Preview – William An – My portfolio</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="In this series I will be looking at the data provided 
+by the San Diego Metropolitan Transit System. This 
+section will be a quick look at the static data, the
+data that provides the schedule and route information.
+
+" />
+    <meta property="og:description" content="In this series I will be looking at the data provided 
+by the San Diego Metropolitan Transit System. This 
+section will be a quick look at the static data, the
+data that provides the schedule and route information.
+
+" />
+    
+    <meta name="author" content="William An" />
+
+    
+    <meta property="og:title" content="SDMTS Part 1 Static Data Preview" />
+    <meta property="twitter:title" content="SDMTS Part 1 Static Data Preview" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="William An - My portfolio" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://raw.githubusercontent.com/barryclark/jekyll-now/master/images/jekyll-logo.png" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">William An</a></h1>
+            <p class="site-description">My portfolio</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>SDMTS Part 1 Static Data Preview</h1>
+
+  <div class="entry">
+    <p>In this series I will be looking at the data provided 
+by the San Diego Metropolitan Transit System. This 
+section will be a quick look at the static data, the
+data that provides the schedule and route information. 
+ <!--more--></p>
+<h2 id="important-links">Important Links</h2>
+<p>The notebooks that supplement the series can be found
+<a href="https://github.com/wnanpi95/SDMTS_DataAnalysis">here</a></p>
+
+<p>All of the SDMTS data is available on their 
+<a href="https://www.sdmts.com/business-center/developers">developer</a>
+page, although a key will have to be requested for 
+access to their real time feed.</p>
+
+<h2 id="introduction">Introduction</h2>
+<p>The SDMTS bus system has always held a special place in my
+heart. Since I didn’t have a car throughout my UCSD career,
+the buses provided the life line I needed to get away from
+campus any time I needed.</p>
+
+<p>In this part, we will take a quick look through what sort
+of information is available. The R notebook that supplements
+this post can be found in the Part_1 folder of the repo.</p>
+
+<p>The static data set follows the GTFS spec established by 
+google. A complete and thorough reference can be found on 
+their <a href="https://developers.google.com/transit/gtfs/">website</a>.</p>
+
+<p>This notebook will simply explore the most interesting 
+sections of the data, as well as the part most relevant to
+the later parts of the series. Let’s get started!</p>
+
+<h2 id="the-files">The Files</h2>
+<p>The static information comes in the form of fifteen files:</p>
+<ol>
+  <li><del>Agency</del></li>
+  <li><del>Calendar Dates</del></li>
+  <li><del>Calendar</del></li>
+  <li><del>Fare Attributes</del></li>
+  <li><del>Fare Rules</del></li>
+  <li><del>Feed Info</del></li>
+  <li><del>Frequencies</del></li>
+  <li>Place Patterns</li>
+  <li>Places</li>
+  <li>Routes</li>
+  <li>Shapes</li>
+  <li>Stop Times</li>
+  <li>Stops</li>
+  <li><del>Transfers</del></li>
+  <li>Trips</li>
+</ol>
+
+<p>The first seven files and transfers will be excluded from 
+this analysis.All of the files come in the form of a csv. 
+I will briefly summarize the data found in each file, as will 
+be relevant to our use case. The exact information found in
+each file can be explored in the notebook.</p>
+
+<h3 id="places">Places</h3>
+<p>This file provides a list of locations (think street corners
+and prominent landmarks) by name, coordinates (latitude and
+longitude). Each place is assigned a 6 character id, which
+is used in the next file…</p>
+<h3 id="place-patterns">Place Patterns</h3>
+<p>The data here is subset by a route and direction. Each subset
+consists of an ordered list of places (provided by id) visited
+by each route-direction.</p>
+<h3 id="routes">Routes</h3>
+<p>Here we find the association between route number and it’s
+long name (two locations that describe its range). In addition
+we can also find here if the route travels in more than one
+directions.</p>
+<h3 id="shapes">Shapes</h3>
+<p>In order to properly map the trips the bus takes, we need to
+account for the roads that will be taken, as well as their
+curvature. In this file, we find subsets defined by a shape id
+which consists of three numbers separated by underscores. The
+first number is the route associated with the shape id, while
+the next two describe the direction and variation of the 
+specific trip that it describes. Each subset consists of a 
+sequence of coordinates, as well as the distance traveled
+by the bus once it has reached that point in the trip.</p>
+<h3 id="stops">Stops</h3>
+<p>This file provides a list of bus stops, by name and 
+coordinates, and assigns each stop an id, which is used in…</p>
+<h3 id="stop-times">Stop Times</h3>
+<p>We are first introduced to the concept of trip ids here. Each
+trip id uniquely defines a combination of:</p>
+<ul>
+  <li>route</li>
+  <li>direction</li>
+  <li>departure time</li>
+</ul>
+
+<p>The rest of the file contains the arrival and departure time
+at each stop, per trip.</p>
+<h3 id="trips">Trips</h3>
+<p>Here, each trip id is associated with all of the characteristics defined above.</p>
+<h3 id="visualization-of-file-relations">Visualization of file relations</h3>
+<p>The script to set up the postgresql database can be found in the repo.</p>
+
+<p><img src="Static_Info_Relation.png" alt="alt text" title="Created with pgadmin 3" /></p>
+
+<h3 id="conclusion">Conclusion</h3>
+<p>I hope this was a clear summary of the kind of data we will be working with.
+In the part 2, we will dive into the data a bit, to get a more concrete idea
+of the data at hand.</p>
+
+  </div>
+
+  <div class="date">
+    Written on July 17, 2017
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:wnan.pi.95@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/wnanpi95/SDMTS_Graph"><i class="svg-icon github"></i></a>
+
+
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>

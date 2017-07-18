@@ -1,1 +1,107 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.4.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-07-17T19:25:07-07:00</updated><id>http://localhost:4000/</id><title type="html">William An</title><subtitle>My portfolio</subtitle></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.4.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-07-18T13:28:24-07:00</updated><id>http://localhost:4000/</id><title type="html">William An</title><subtitle>My portfolio</subtitle><entry><title type="html">SDMTS Part 1 Static Data Preview</title><link href="http://localhost:4000/SDMTS-Part-1/" rel="alternate" type="text/html" title="SDMTS Part 1 Static Data Preview" /><published>2017-07-17T00:00:00-07:00</published><updated>2017-07-17T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-1</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-1/">&lt;p&gt;In this series I will be looking at the data provided 
+by the San Diego Metropolitan Transit System. This 
+section will be a quick look at the static data, the
+data that provides the schedule and route information. 
+ &lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id=&quot;important-links&quot;&gt;Important Links&lt;/h2&gt;
+&lt;p&gt;The notebooks that supplement the series can be found
+&lt;a href=&quot;https://github.com/wnanpi95/SDMTS_DataAnalysis&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;All of the SDMTS data is available on their 
+&lt;a href=&quot;https://www.sdmts.com/business-center/developers&quot;&gt;developer&lt;/a&gt;
+page, although a key will have to be requested for 
+access to their real time feed.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;The SDMTS bus system has always held a special place in my
+heart. Since I didn’t have a car throughout my UCSD career,
+the buses provided the life line I needed to get away from
+campus any time I needed.&lt;/p&gt;
+
+&lt;p&gt;In this part, we will take a quick look through what sort
+of information is available. The R notebook that supplements
+this post can be found in the Part_1 folder of the repo.&lt;/p&gt;
+
+&lt;p&gt;The static data set follows the GTFS spec established by 
+google. A complete and thorough reference can be found on 
+their &lt;a href=&quot;https://developers.google.com/transit/gtfs/&quot;&gt;website&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;This notebook will simply explore the most interesting 
+sections of the data, as well as the part most relevant to
+the later parts of the series. Let’s get started!&lt;/p&gt;
+
+&lt;h2 id=&quot;the-files&quot;&gt;The Files&lt;/h2&gt;
+&lt;p&gt;The static information comes in the form of fifteen files:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;del&gt;Agency&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Calendar Dates&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Calendar&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Fare Attributes&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Fare Rules&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Feed Info&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Frequencies&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;Place Patterns&lt;/li&gt;
+  &lt;li&gt;Places&lt;/li&gt;
+  &lt;li&gt;Routes&lt;/li&gt;
+  &lt;li&gt;Shapes&lt;/li&gt;
+  &lt;li&gt;Stop Times&lt;/li&gt;
+  &lt;li&gt;Stops&lt;/li&gt;
+  &lt;li&gt;&lt;del&gt;Transfers&lt;/del&gt;&lt;/li&gt;
+  &lt;li&gt;Trips&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The first seven files and transfers will be excluded from 
+this analysis.All of the files come in the form of a csv. 
+I will briefly summarize the data found in each file, as will 
+be relevant to our use case. The exact information found in
+each file can be explored in the notebook.&lt;/p&gt;
+
+&lt;h3 id=&quot;places&quot;&gt;Places&lt;/h3&gt;
+&lt;p&gt;This file provides a list of locations (think street corners
+and prominent landmarks) by name, coordinates (latitude and
+longitude). Each place is assigned a 6 character id, which
+is used in the next file…&lt;/p&gt;
+&lt;h3 id=&quot;place-patterns&quot;&gt;Place Patterns&lt;/h3&gt;
+&lt;p&gt;The data here is subset by a route and direction. Each subset
+consists of an ordered list of places (provided by id) visited
+by each route-direction.&lt;/p&gt;
+&lt;h3 id=&quot;routes&quot;&gt;Routes&lt;/h3&gt;
+&lt;p&gt;Here we find the association between route number and it’s
+long name (two locations that describe its range). In addition
+we can also find here if the route travels in more than one
+directions.&lt;/p&gt;
+&lt;h3 id=&quot;shapes&quot;&gt;Shapes&lt;/h3&gt;
+&lt;p&gt;In order to properly map the trips the bus takes, we need to
+account for the roads that will be taken, as well as their
+curvature. In this file, we find subsets defined by a shape id
+which consists of three numbers separated by underscores. The
+first number is the route associated with the shape id, while
+the next two describe the direction and variation of the 
+specific trip that it describes. Each subset consists of a 
+sequence of coordinates, as well as the distance traveled
+by the bus once it has reached that point in the trip.&lt;/p&gt;
+&lt;h3 id=&quot;stops&quot;&gt;Stops&lt;/h3&gt;
+&lt;p&gt;This file provides a list of bus stops, by name and 
+coordinates, and assigns each stop an id, which is used in…&lt;/p&gt;
+&lt;h3 id=&quot;stop-times&quot;&gt;Stop Times&lt;/h3&gt;
+&lt;p&gt;We are first introduced to the concept of trip ids here. Each
+trip id uniquely defines a combination of:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;route&lt;/li&gt;
+  &lt;li&gt;direction&lt;/li&gt;
+  &lt;li&gt;departure time&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The rest of the file contains the arrival and departure time
+at each stop, per trip.&lt;/p&gt;
+&lt;h3 id=&quot;trips&quot;&gt;Trips&lt;/h3&gt;
+&lt;p&gt;Here, each trip id is associated with all of the characteristics defined above.&lt;/p&gt;
+&lt;h3 id=&quot;visualization-of-file-relations&quot;&gt;Visualization of file relations&lt;/h3&gt;
+&lt;p&gt;The script to set up the postgresql database can be found in the repo.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;Static_Info_Relation.png&quot; alt=&quot;alt text&quot; title=&quot;Created with pgadmin 3&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+&lt;p&gt;I hope this was a clear summary of the kind of data we will be working with.
+In the part 2, we will dive into the data a bit, to get a more concrete idea
+of the data at hand.&lt;/p&gt;</content><author><name></name></author><summary type="html">In this series I will be looking at the data provided by the San Diego Metropolitan Transit System. This section will be a quick look at the static data, the data that provides the schedule and route information.</summary></entry></feed>
