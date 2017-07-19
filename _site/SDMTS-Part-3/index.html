@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SDMTS Part 3 Real Time Data – William An – My portfolio</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="This post will cover the process of scraping the data from SDMTS’s real time
+feed, as well as explore the data a bit.
+
+" />
+    <meta property="og:description" content="This post will cover the process of scraping the data from SDMTS’s real time
+feed, as well as explore the data a bit.
+
+" />
+    
+    <meta name="author" content="William An" />
+
+    
+    <meta property="og:title" content="SDMTS Part 3 Real Time Data" />
+    <meta property="twitter:title" content="SDMTS Part 3 Real Time Data" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="William An - My portfolio" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://raw.githubusercontent.com/barryclark/jekyll-now/master/images/jekyll-logo.png" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">William An</a></h1>
+            <p class="site-description">My portfolio</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>SDMTS Part 3 Real Time Data</h1>
+
+  <div class="entry">
+    <p>This post will cover the process of scraping the data from SDMTS’s real time
+feed, as well as explore the data a bit.</p>
+
+<!--more-->
+
+<h2 id="important-links">Important Links</h2>
+<p>This part has a supplemental python notebook, as well a couple sample scripts
+that I used. They can all be found at the
+<a href="https://github.com/wnanpi95/SDMTS_DataAnalysis">repo</a> in the Part 3 folder.</p>
+
+<p>Additionally, the data from the feed comes in the protocol buffer format that
+was created by google. I will talk a bit about protocol buffer in this post,
+but <a href="https://developers.google.com/protocol-buffers/">here</a> is a link to the
+official documentation.</p>
+
+<h2 id="introduction">Introduction</h2>
+<p>SDMTS provides the end points to reach their data on their
+<a href="https://www.sdmts.com/business-center-developers/real-time-data">developer</a>
+page. The feed we will be concerned with in this post and throughout the series
+will be the vehicle position feed. Before you can have access to the feed, you
+must request an api key, which can be sent via email submission from their 
+website. Mine took roughly a week before they responded, so don’t get too 
+worked up if you’re stuck waiting.</p>
+
+<h2 id="protocol-buffer">Protocol Buffer</h2>
+<p>The feed data is presented in the form of what is called a protocol buffer.
+It is a language-independent data format, similiar to json. You can follow
+the link above to google’s documentation to install the protobuf compiler,
+which will allow you to take a protobuf template, and generate source code
+in several supported languages, that will then allow you to read in pb files
+and generate the objects.</p>
+
+<p>In the repo I already compiled the module for python in order to read in the pb
+files we want, in this case the protobuf template comes from the GTFS real time
+spec.</p>
+
+<h2 id="file-download-and-parse">File Download and Parse</h2>
+<p>The note book covers most of the details of this process. If you are interested
+please take a look but nothing particularly interesting happens here.</p>
+
+<p>The script I have included I have running on a raspberry pi 3. I have it 
+scheduled to scrape from the feed once a minute throughout the day. Because
+the buses are not all updated consistently, this results in duplicate data,
+which I remove using the other script.</p>
+
+<h2 id="visualization">Visualization</h2>
+<p>Here is a snapshot of all of the buses picked up by the feed:</p>
+
+<p><img src="real_time.png" alt="alt text" title="Created with ggmap" /></p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>If you felt these first three parts were pretty dull please stick around!
+These steps were necessary in order to set up the context for the next few 
+parts. In part 4, we will begin to get our hands dirty with a bit of feature
+engineering, and extract some interesting information out of our data.</p>
+
+  </div>
+
+  <div class="date">
+    Written on July 18, 2017
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:wnan.pi.95@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/wnanpi95/SDMTS_Graph"><i class="svg-icon github"></i></a>
+
+
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>

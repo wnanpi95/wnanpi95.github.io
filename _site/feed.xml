@@ -1,4 +1,58 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.4.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-07-18T17:53:43-07:00</updated><id>http://localhost:4000/</id><title type="html">William An</title><subtitle>My portfolio</subtitle><entry><title type="html">SDMTS Part 2 Static Data Exploration</title><link href="http://localhost:4000/SDMTS-Part-2/" rel="alternate" type="text/html" title="SDMTS Part 2 Static Data Exploration" /><published>2017-07-18T00:00:00-07:00</published><updated>2017-07-18T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-2</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-2/">&lt;p&gt;In this post, we will explore the contents of the data set, and see what 
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.4.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-07-18T21:33:51-07:00</updated><id>http://localhost:4000/</id><title type="html">William An</title><subtitle>My portfolio</subtitle><entry><title type="html">SDMTS Part 3 Real Time Data</title><link href="http://localhost:4000/SDMTS-Part-3/" rel="alternate" type="text/html" title="SDMTS Part 3 Real Time Data" /><published>2017-07-18T00:00:00-07:00</published><updated>2017-07-18T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-3</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-3/">&lt;p&gt;This post will cover the process of scraping the data from SDMTS’s real time
+feed, as well as explore the data a bit.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h2 id=&quot;important-links&quot;&gt;Important Links&lt;/h2&gt;
+&lt;p&gt;This part has a supplemental python notebook, as well a couple sample scripts
+that I used. They can all be found at the
+&lt;a href=&quot;https://github.com/wnanpi95/SDMTS_DataAnalysis&quot;&gt;repo&lt;/a&gt; in the Part 3 folder.&lt;/p&gt;
+
+&lt;p&gt;Additionally, the data from the feed comes in the protocol buffer format that
+was created by google. I will talk a bit about protocol buffer in this post,
+but &lt;a href=&quot;https://developers.google.com/protocol-buffers/&quot;&gt;here&lt;/a&gt; is a link to the
+official documentation.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;SDMTS provides the end points to reach their data on their
+&lt;a href=&quot;https://www.sdmts.com/business-center-developers/real-time-data&quot;&gt;developer&lt;/a&gt;
+page. The feed we will be concerned with in this post and throughout the series
+will be the vehicle position feed. Before you can have access to the feed, you
+must request an api key, which can be sent via email submission from their 
+website. Mine took roughly a week before they responded, so don’t get too 
+worked up if you’re stuck waiting.&lt;/p&gt;
+
+&lt;h2 id=&quot;protocol-buffer&quot;&gt;Protocol Buffer&lt;/h2&gt;
+&lt;p&gt;The feed data is presented in the form of what is called a protocol buffer.
+It is a language-independent data format, similiar to json. You can follow
+the link above to google’s documentation to install the protobuf compiler,
+which will allow you to take a protobuf template, and generate source code
+in several supported languages, that will then allow you to read in pb files
+and generate the objects.&lt;/p&gt;
+
+&lt;p&gt;In the repo I already compiled the module for python in order to read in the pb
+files we want, in this case the protobuf template comes from the GTFS real time
+spec.&lt;/p&gt;
+
+&lt;h2 id=&quot;file-download-and-parse&quot;&gt;File Download and Parse&lt;/h2&gt;
+&lt;p&gt;The note book covers most of the details of this process. If you are interested
+please take a look but nothing particularly interesting happens here.&lt;/p&gt;
+
+&lt;p&gt;The script I have included I have running on a raspberry pi 3. I have it 
+scheduled to scrape from the feed once a minute throughout the day. Because
+the buses are not all updated consistently, this results in duplicate data,
+which I remove using the other script.&lt;/p&gt;
+
+&lt;h2 id=&quot;visualization&quot;&gt;Visualization&lt;/h2&gt;
+&lt;p&gt;Here is a snapshot of all of the buses picked up by the feed:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;real_time.png&quot; alt=&quot;alt text&quot; title=&quot;Created with ggmap&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;If you felt these first three parts were pretty dull please stick around!
+These steps were necessary in order to set up the context for the next few 
+parts. In part 4, we will begin to get our hands dirty with a bit of feature
+engineering, and extract some interesting information out of our data.&lt;/p&gt;</content><author><name></name></author><summary type="html">This post will cover the process of scraping the data from SDMTS’s real time feed, as well as explore the data a bit.</summary></entry><entry><title type="html">SDMTS Part 2 Static Data Exploration</title><link href="http://localhost:4000/SDMTS-Part-2/" rel="alternate" type="text/html" title="SDMTS Part 2 Static Data Exploration" /><published>2017-07-18T00:00:00-07:00</published><updated>2017-07-18T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-2</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-2/">&lt;p&gt;In this post, we will explore the contents of the data set, and see what 
 we can do with it!&lt;/p&gt;
 
 &lt;!--more--&gt;
