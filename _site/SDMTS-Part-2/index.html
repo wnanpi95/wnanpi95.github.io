@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SDMTS Part 2 Static Data Exploration – William An – My portfolio</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="In this post, we will explore the contents of the data set, and see what 
+we can do with it!
+
+" />
+    <meta property="og:description" content="In this post, we will explore the contents of the data set, and see what 
+we can do with it!
+
+" />
+    
+    <meta name="author" content="William An" />
+
+    
+    <meta property="og:title" content="SDMTS Part 2 Static Data Exploration" />
+    <meta property="twitter:title" content="SDMTS Part 2 Static Data Exploration" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="William An - My portfolio" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://raw.githubusercontent.com/barryclark/jekyll-now/master/images/jekyll-logo.png" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">William An</a></h1>
+            <p class="site-description">My portfolio</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>SDMTS Part 2 Static Data Exploration</h1>
+
+  <div class="entry">
+    <p>In this post, we will explore the contents of the data set, and see what 
+we can do with it!</p>
+
+<!--more-->
+
+<h2 id="important-links">Important Links</h2>
+<p>This post also has a supplemental R notebook. All of the code and the details
+of the exploration can be found 
+<a href="https://github.com/wnanpi95/SDMTS_DataAnalysis">there</a> in the Part_2 folder.
+In this post I will only summarize the findings and display some highlights.</p>
+
+<h2 id="introduction">Introduction</h2>
+<p>The purpose of this post for me was to confirm my beliefs on what I thought
+the data values represented. For you, hopefully it will give you a better
+idea of how the data is mapped out through out this file system. Admittedly,
+my first exploration of this data set occurred before I knew anything about
+any RDBMS’s, and as a result was pretty painful. Hopefully with my summaries
+and the commands to put everything into postgresql makes everything crystal
+clear.</p>
+
+<h2 id="mapping-out-a-single-trip">Mapping out a single trip</h2>
+<p>To start out, we’ll begin by mapping out a single trip. All of the code and 
+details can be found in the R notebook. The 30 route has a special place in my
+heart, allowing me to surf every morning at 6 before class. Let’s begin by
+looking at a trip along this route!</p>
+
+<p>The data we are going to need to plot this out are a trip_id, a list of 
+stop_id’s and their coordinates, and a list of shape_pt’s and their 
+coordinates. All of the data we need can be found in the shapes, stops,
+stop_times, and trips files. After a bit of munging and using the ggmap api
+we have the following map:</p>
+
+<p><img src="route_30_trip.png" alt="alt text" title="Created with ggmap" /></p>
+
+<p>The black line represents the path taken by the trip and the red dots are all
+of the stops along the way.</p>
+
+<h2 id="places">Places</h2>
+<p>In the places file is a list of primary locations that are currently services by
+SDMTS. Let us take a look at its distribution on a map:</p>
+
+<p><img src="places.png" alt="alt text" title="Created with ggmap" /></p>
+
+<p>The SDMTS system seems to extend out to cover a large region. However, there is
+clearly a primary area of service, so let us take a closer look at that:</p>
+
+<p><img src="places_primary.png" alt="alt text" title="Created with ggmap" /></p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>Unfortunately, the amount of interesting things that can be accomplished with 
+this data alone is pretty limited. However, the code in notebook should help
+you get a more solid idea of how that static data is conveyed and how to
+extract useful ideas out of it. Moreover, this data serves as a necessary
+context for making sense out of the live feed data. In Part 3, I will cover
+the process I am using to gather data from the real time feed.</p>
+
+  </div>
+
+  <div class="date">
+    Written on July 18, 2017
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:wnan.pi.95@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/wnanpi95/SDMTS_Graph"><i class="svg-icon github"></i></a>
+
+
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>

@@ -1,4 +1,58 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.4.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-07-18T13:28:24-07:00</updated><id>http://localhost:4000/</id><title type="html">William An</title><subtitle>My portfolio</subtitle><entry><title type="html">SDMTS Part 1 Static Data Preview</title><link href="http://localhost:4000/SDMTS-Part-1/" rel="alternate" type="text/html" title="SDMTS Part 1 Static Data Preview" /><published>2017-07-17T00:00:00-07:00</published><updated>2017-07-17T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-1</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-1/">&lt;p&gt;In this series I will be looking at the data provided 
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.4.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-07-18T17:53:43-07:00</updated><id>http://localhost:4000/</id><title type="html">William An</title><subtitle>My portfolio</subtitle><entry><title type="html">SDMTS Part 2 Static Data Exploration</title><link href="http://localhost:4000/SDMTS-Part-2/" rel="alternate" type="text/html" title="SDMTS Part 2 Static Data Exploration" /><published>2017-07-18T00:00:00-07:00</published><updated>2017-07-18T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-2</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-2/">&lt;p&gt;In this post, we will explore the contents of the data set, and see what 
+we can do with it!&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h2 id=&quot;important-links&quot;&gt;Important Links&lt;/h2&gt;
+&lt;p&gt;This post also has a supplemental R notebook. All of the code and the details
+of the exploration can be found 
+&lt;a href=&quot;https://github.com/wnanpi95/SDMTS_DataAnalysis&quot;&gt;there&lt;/a&gt; in the Part_2 folder.
+In this post I will only summarize the findings and display some highlights.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;The purpose of this post for me was to confirm my beliefs on what I thought
+the data values represented. For you, hopefully it will give you a better
+idea of how the data is mapped out through out this file system. Admittedly,
+my first exploration of this data set occurred before I knew anything about
+any RDBMS’s, and as a result was pretty painful. Hopefully with my summaries
+and the commands to put everything into postgresql makes everything crystal
+clear.&lt;/p&gt;
+
+&lt;h2 id=&quot;mapping-out-a-single-trip&quot;&gt;Mapping out a single trip&lt;/h2&gt;
+&lt;p&gt;To start out, we’ll begin by mapping out a single trip. All of the code and 
+details can be found in the R notebook. The 30 route has a special place in my
+heart, allowing me to surf every morning at 6 before class. Let’s begin by
+looking at a trip along this route!&lt;/p&gt;
+
+&lt;p&gt;The data we are going to need to plot this out are a trip_id, a list of 
+stop_id’s and their coordinates, and a list of shape_pt’s and their 
+coordinates. All of the data we need can be found in the shapes, stops,
+stop_times, and trips files. After a bit of munging and using the ggmap api
+we have the following map:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;route_30_trip.png&quot; alt=&quot;alt text&quot; title=&quot;Created with ggmap&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The black line represents the path taken by the trip and the red dots are all
+of the stops along the way.&lt;/p&gt;
+
+&lt;h2 id=&quot;places&quot;&gt;Places&lt;/h2&gt;
+&lt;p&gt;In the places file is a list of primary locations that are currently services by
+SDMTS. Let us take a look at its distribution on a map:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;places.png&quot; alt=&quot;alt text&quot; title=&quot;Created with ggmap&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The SDMTS system seems to extend out to cover a large region. However, there is
+clearly a primary area of service, so let us take a closer look at that:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;places_primary.png&quot; alt=&quot;alt text&quot; title=&quot;Created with ggmap&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Unfortunately, the amount of interesting things that can be accomplished with 
+this data alone is pretty limited. However, the code in notebook should help
+you get a more solid idea of how that static data is conveyed and how to
+extract useful ideas out of it. Moreover, this data serves as a necessary
+context for making sense out of the live feed data. In Part 3, I will cover
+the process I am using to gather data from the real time feed.&lt;/p&gt;</content><author><name></name></author><summary type="html">In this post, we will explore the contents of the data set, and see what we can do with it!</summary></entry><entry><title type="html">SDMTS Part 1 Static Data Preview</title><link href="http://localhost:4000/SDMTS-Part-1/" rel="alternate" type="text/html" title="SDMTS Part 1 Static Data Preview" /><published>2017-07-17T00:00:00-07:00</published><updated>2017-07-17T00:00:00-07:00</updated><id>http://localhost:4000/SDMTS-Part-1</id><content type="html" xml:base="http://localhost:4000/SDMTS-Part-1/">&lt;p&gt;In this series I will be looking at the data provided 
 by the San Diego Metropolitan Transit System. This 
 section will be a quick look at the static data, the
 data that provides the schedule and route information. 
