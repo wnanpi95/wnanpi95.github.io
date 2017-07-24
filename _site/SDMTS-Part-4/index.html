@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SDMTS Part 4 Feature Engineering – William An – My portfolio</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="Today we will begin to take advantage of having saved chunks of the data, and
+begin to do some feature engineering, which will give us a bit more data that
+we can use.
+
+" />
+    <meta property="og:description" content="Today we will begin to take advantage of having saved chunks of the data, and
+begin to do some feature engineering, which will give us a bit more data that
+we can use.
+
+" />
+    
+    <meta name="author" content="William An" />
+
+    
+    <meta property="og:title" content="SDMTS Part 4 Feature Engineering" />
+    <meta property="twitter:title" content="SDMTS Part 4 Feature Engineering" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="William An - My portfolio" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://raw.githubusercontent.com/barryclark/jekyll-now/master/images/jekyll-logo.png" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">William An</a></h1>
+            <p class="site-description">My portfolio</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>SDMTS Part 4 Feature Engineering</h1>
+
+  <div class="entry">
+    <p>Today we will begin to take advantage of having saved chunks of the data, and
+begin to do some feature engineering, which will give us a bit more data that
+we can use.</p>
+
+<!--more-->
+
+<h2 id="important-links">Important Links</h2>
+<p>The notebooks and Swift script can be found
+<a href="https://github.com/wnanpi95/SDMTS_DataAnalysis">here</a> in the Part 4 folder.</p>
+
+<h2 id="introduction">Introduction</h2>
+<p>The script that I am using gathers 24 hour chunks of the feed, spaced apart by
+sixty seconds. With these chunks of data, we can estimate the average velocity
+the bus traveled at at any given time. Let me walk you through my methodology!</p>
+
+<p>I wrote the script to generate these features in Swift, since it as a compiled
+language it has better performance characteristics than Python, while also
+having many useful native features, such as dictionaries and optional values,
+which help make the script pretty easy to hack together.</p>
+
+<p>The way the file IO and command line arguments are set up aren’t particularly 
+interesting. If you want to take a look, they are in the source code.</p>
+
+<p>First, let’s take a look at the basic object we will be working with:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">BusEntity</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">route_id</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">trip_id</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">timestamp</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">let</span> <span class="nv">latitude</span><span class="p">:</span> <span class="kt">Float</span>
+    <span class="k">let</span> <span class="nv">longitude</span><span class="p">:</span> <span class="kt">Float</span>
+    <span class="k">let</span> <span class="nv">vehicle_id</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="c1">// ...</span>
+</code></pre>
+</div>
+<p>These are the values that were originally scraped from the feed, and thus are
+already defined prior to running the script. Thus these properties are defined
+the moment the object is initialized.</p>
+
+<p>The next property we have to define is the shape_id:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">var</span> <span class="nv">shape_id</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+</code></pre>
+</div>
+
+<p>We use the static data set to create two dictionaries that we will use
+throughout the script:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">StaticDictionaryCollection</span> <span class="p">{</span>
+    
+    <span class="k">let</span> <span class="nv">trip_idTOshape_id</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">]</span>
+    <span class="k">let</span> <span class="nv">shape_idTOshapes_array</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="p">[</span><span class="kt">Shape</span><span class="p">]]</span>
+    <span class="c1">// ...</span>
+</code></pre>
+</div>
+<p>I hope their names are descriptive enough. To define the shape_id property then
+is straightforward enough:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">getShape_id</span><span class="p">(</span><span class="nv">resource</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">String</span><span class="p">])</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">shape_id</span> <span class="o">=</span> <span class="n">resource</span><span class="p">[</span><span class="k">self</span><span class="o">.</span><span class="n">trip_id</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>Now that the basic properties are defined, we can move forward.</p>
+<h2 id="distance-traveled">Distance Traveled</h2>
+<h3 id="getting-the-shape-vertices">Getting the shape vertices</h3>
+<p>The shapes.txt file from the static data set contains a value for each shape
+vertex called dist_traveled, which gives the distance traveled by the bus once
+it reaches that vertex in the route. Then, if we can map each recorded bus
+position to a shape vertex and its adjacent vertices, we can interpolate
+the distance traveled at that recording. Thus the first thing we need is the
+closest shape vertex and it’s neighbors:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">var</span> <span class="nv">shapeAdj</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>                  <span class="c1">// Closest shape vertex</span>
+<span class="k">var</span> <span class="nv">shapeAnte</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>                 <span class="c1">// Vertex before the closest</span>
+<span class="k">var</span> <span class="nv">shapePost</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>                 <span class="c1">// Vertex after the closest</span>
+</code></pre>
+</div>
+
+<p>To acutally find the nearest shape to each point, I began with iterating through 
+the array of shape vertices using a bounding box:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">findCandidates</span><span class="p">(</span><span class="nv">shapeSet</span><span class="p">:</span> <span class="p">[</span><span class="kt">Shape</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">Int</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">candidateIndices</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">let</span> <span class="nv">upperLat</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">latitude</span> <span class="o">+</span> <span class="n">bbox_for_buses</span>
+        <span class="k">let</span> <span class="nv">lowerLat</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">latitude</span> <span class="o">-</span> <span class="n">bbox_for_buses</span>
+        
+        <span class="k">let</span> <span class="nv">upperLon</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">longitude</span> <span class="o">+</span> <span class="n">bbox_for_buses</span>
+        <span class="k">let</span> <span class="nv">lowerLon</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">longitude</span> <span class="o">-</span> <span class="n">bbox_for_buses</span>
+        
+        <span class="k">for</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span> <span class="k">in</span> <span class="n">shapeSet</span><span class="o">.</span><span class="nf">enumerated</span><span class="p">()</span> <span class="p">{</span>
+            
+            <span class="k">let</span> <span class="nv">lat</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">latitude</span>
+            <span class="k">let</span> <span class="nv">lon</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">longitude</span>
+            
+            <span class="k">if</span> <span class="n">lat</span> <span class="o">&gt;=</span> <span class="n">lowerLat</span> <span class="o">&amp;&amp;</span> <span class="n">lat</span> <span class="o">&lt;=</span> <span class="n">upperLat</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">lon</span> <span class="o">&gt;=</span> <span class="n">lowerLon</span> <span class="o">&amp;&amp;</span> <span class="n">lon</span> <span class="o">&lt;=</span> <span class="n">upperLon</span> <span class="p">{</span>
+                    <span class="n">candidateIndices</span><span class="o">.</span><span class="nf">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">candidateIndices</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>Doing this generates a smaller list of possible closest vertices. Doing this
+has two main advantages:</p>
+<ul>
+  <li>Finding the closest shape to the recorded position on first pass is
+computationally much more expensive than simply running the list through
+two comparison operators. With a substantially smaller list of feasible
+candidates, we save a ton of time.</li>
+  <li>The feed occasionally records the bus’s position when it is not actually
+running a route. Thus, using this bounding box first culls the recorded
+positions that aren’t actually close enough to the route to be on a trip.</li>
+</ul>
+
+<p>With our reduced list, we can find the closest shape and its neighbors:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">findShapes</span><span class="p">(</span><span class="nv">candidates</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">shapeSet</span><span class="p">:</span> <span class="p">[</span><span class="kt">Shape</span><span class="p">])</span> <span class="p">{</span>
+
+        <span class="k">guard</span> <span class="n">candidates</span><span class="o">.</span><span class="n">isEmpty</span> <span class="o">==</span> <span class="kc">false</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+
+        <span class="k">var</span> <span class="nv">sepMin</span><span class="p">:</span> <span class="kt">Float</span> <span class="o">=</span> <span class="mf">9999.9</span>
+        <span class="k">var</span> <span class="nv">nearestIndex</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+
+
+        <span class="k">for</span> <span class="n">index</span> <span class="k">in</span> <span class="n">candidates</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">shape</span> <span class="o">=</span> <span class="n">shapeSet</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">let</span> <span class="nv">sepLat</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">-</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">latitude</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">-</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">latitude</span><span class="p">))</span>
+            <span class="k">let</span> <span class="nv">sepLon</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">-</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">-</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">sepLat</span><span class="o">+</span><span class="n">sepLon</span> <span class="o">&lt;</span> <span class="n">sepMin</span> <span class="p">{</span>
+                <span class="n">sepMin</span> <span class="o">=</span> <span class="n">sepLat</span><span class="o">+</span><span class="n">sepLon</span>
+                <span class="n">nearestIndex</span> <span class="o">=</span> <span class="n">index</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+
+        <span class="k">guard</span> <span class="n">nearestIndex</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+
+        <span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span> <span class="o">=</span> <span class="n">shapeSet</span><span class="p">[</span><span class="n">nearestIndex</span><span class="o">!</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">nearestIndex</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">shapeAnte</span> <span class="o">=</span> <span class="n">shapeSet</span><span class="p">[</span><span class="n">nearestIndex</span><span class="o">!-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">nearestIndex</span> <span class="o">!=</span> <span class="p">(</span><span class="n">shapeSet</span><span class="o">.</span><span class="n">count</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">shapePost</span> <span class="o">=</span> <span class="n">shapeSet</span><span class="p">[</span><span class="n">nearestIndex</span><span class="o">!+</span><span class="mi">1</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>With the proper shape vertices define, we can interpolate the distance traveled.</p>
+<h3 id="distance-traveled-interpolation">Distance traveled interpolation</h3>
+<p>NOTE: I may not do a very good job explaining this sections, feel free to just
+skip over ite the distance traveled.</p>
+<h3 id="distance-traveled-interpolation-1">Distance traveled interpolation</h3>
+<p>NOTE: I may not do a very good job explaining this section, feel free to just
+skip over it. 
+TO BE WRITTEN</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">findParts</span><span class="p">(</span><span class="nv">shapeAlpha</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">,</span> <span class="nv">shapeBeta</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Float</span><span class="p">?,</span> <span class="kt">Float</span><span class="p">?)</span> <span class="p">{</span>
+        
+        <span class="k">let</span> <span class="nv">position</span> <span class="o">=</span> <span class="kt">Position</span><span class="p">(</span><span class="nv">latitude</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                                <span class="nv">longitude</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">longitude</span><span class="p">)</span>
+        
+        <span class="k">let</span> <span class="nv">separationVector</span> <span class="o">=</span> <span class="n">shapeBeta</span> <span class="o">-</span> <span class="n">shapeAlpha</span>
+        
+        <span class="k">let</span> <span class="nv">tailVector</span> <span class="o">=</span> <span class="n">position</span> <span class="o">-</span> <span class="n">shapeAlpha</span>
+        <span class="k">let</span> <span class="nv">leg</span> <span class="o">=</span> <span class="n">separationVector</span> <span class="o">*</span> <span class="n">tailVector</span>
+        <span class="k">if</span> <span class="n">leg</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="nf">return</span> <span class="p">(</span><span class="kc">nil</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">}</span>
+        
+        <span class="k">let</span> <span class="nv">tailMagnitude</span> <span class="o">=</span> <span class="nf">magnitude</span><span class="p">(</span><span class="nv">position</span><span class="p">:</span> <span class="n">tailVector</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">arm</span> <span class="o">=</span> <span class="nf">abs</span><span class="p">(</span><span class="n">tailMagnitude</span><span class="o">*</span><span class="n">tailMagnitude</span> <span class="o">-</span> <span class="n">leg</span><span class="o">*</span><span class="n">leg</span><span class="p">)</span>
+        
+        <span class="nf">return</span> <span class="p">(</span><span class="n">leg</span><span class="p">,</span> <span class="n">arm</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">getDist_traveled</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">guard</span> <span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+        
+        <span class="k">var</span> <span class="nv">legPost</span><span class="p">:</span> <span class="kt">Float</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+        <span class="k">var</span> <span class="nv">armPost</span><span class="p">:</span> <span class="kt">Float</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+        <span class="k">if</span> <span class="k">self</span><span class="o">.</span><span class="n">shapePost</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">legPost</span><span class="p">,</span> <span class="n">armPost</span><span class="p">)</span> <span class="o">=</span> <span class="nf">findParts</span><span class="p">(</span><span class="nv">shapeAlpha</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="o">!</span><span class="p">,</span>
+                                           <span class="nv">shapeBeta</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">shapePost</span><span class="o">!</span><span class="p">)</span>
+        <span class="p">}</span>
+        
+        <span class="k">var</span> <span class="nv">legAnte</span><span class="p">:</span> <span class="kt">Float</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+        <span class="k">var</span> <span class="nv">armAnte</span><span class="p">:</span> <span class="kt">Float</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+        <span class="k">if</span> <span class="k">self</span><span class="o">.</span><span class="n">shapeAnte</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">legAnte</span><span class="p">,</span> <span class="n">armAnte</span><span class="p">)</span> <span class="o">=</span> <span class="nf">findParts</span><span class="p">(</span><span class="nv">shapeAlpha</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">shapeAnte</span><span class="o">!</span><span class="p">,</span>
+                                           <span class="nv">shapeBeta</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="o">!</span><span class="p">)</span>
+        <span class="p">}</span>
+        
+        <span class="k">if</span> <span class="n">legPost</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="n">legAnte</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">dist_travelled</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">((</span><span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="p">?</span><span class="o">.</span><span class="n">dist_travelled</span><span class="p">)</span><span class="o">!</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">legPost</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="n">legAnte</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">dist_travelled</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">((</span><span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="p">?</span><span class="o">.</span><span class="n">dist_travelled</span><span class="p">)</span><span class="o">!</span> <span class="o">+</span> <span class="n">legPost</span><span class="o">!</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">legPost</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="n">legAnte</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">dist_travelled</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">((</span><span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="p">?</span><span class="o">.</span><span class="n">dist_travelled</span><span class="p">)</span><span class="o">!</span> <span class="o">+</span> <span class="n">legAnte</span><span class="o">!</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">legPost</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="n">legAnte</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">armPost</span><span class="o">!</span> <span class="o">&lt;</span> <span class="n">armAnte</span><span class="o">!</span> <span class="p">{</span>
+                <span class="k">self</span><span class="o">.</span><span class="n">dist_travelled</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">((</span><span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="p">?</span><span class="o">.</span><span class="n">dist_travelled</span><span class="p">)</span><span class="o">!</span> <span class="o">+</span> <span class="n">legPost</span><span class="o">!</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">self</span><span class="o">.</span><span class="n">dist_travelled</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">((</span><span class="k">self</span><span class="o">.</span><span class="n">shapeAdj</span><span class="p">?</span><span class="o">.</span><span class="n">dist_travelled</span><span class="p">)</span><span class="o">!</span> <span class="o">+</span> <span class="n">legAnte</span><span class="o">!</span><span class="p">)</span>
+            <span class="p">}</span>
+            
+        <span class="p">}</span>
+        
+<span class="p">}</span>
+</code></pre>
+</div>
+<h2 id="velocity">Velocity</h2>
+<p>Most of the heavy lifting has already been done. With the distance traveled
+already determined, calculating a velocity estimate is straightforward 
+enough:</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">calcVel</span><span class="p">(</span><span class="nv">bus1</span><span class="p">:</span> <span class="kt">BusEntity</span><span class="p">,</span> <span class="nv">bus2</span><span class="p">:</span> <span class="kt">BusEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Double</span> <span class="p">{</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">bus1</span><span class="o">.</span><span class="n">dist_travelled</span><span class="o">-</span><span class="n">bus2</span><span class="o">.</span><span class="n">dist_travelled</span><span class="p">)</span> <span class="o">/</span> <span class="kt">Double</span><span class="p">(</span><span class="n">bus1</span><span class="o">.</span><span class="n">timestamp</span><span class="o">-</span><span class="n">bus2</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="kd">func</span> <span class="nf">getVels</span><span class="p">(</span><span class="nv">trip</span><span class="p">:</span> <span class="p">[</span><span class="kt">BusEntity</span><span class="p">])</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">count</span> <span class="o">=</span> <span class="n">trip</span><span class="o">.</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="p">{</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+        
+        <span class="n">trip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">(</span><span class="nf">calcVel</span><span class="p">(</span><span class="nv">bus1</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nv">bus2</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">trip</span><span class="o">.</span><span class="n">last</span><span class="p">?</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">(</span><span class="nf">calcVel</span><span class="p">(</span><span class="nv">bus1</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="n">count</span><span class="p">],</span> <span class="nv">bus2</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..&lt;</span><span class="n">count</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">back</span> <span class="o">=</span> <span class="nf">calcVel</span><span class="p">(</span><span class="nv">bus1</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nv">bus2</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">let</span> <span class="nv">front</span> <span class="o">=</span> <span class="nf">calcVel</span><span class="p">(</span><span class="nv">bus1</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="nv">bus2</span><span class="p">:</span> <span class="n">trip</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            
+            <span class="n">trip</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="kt">Double</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">back</span><span class="o">+</span><span class="n">front</span><span class="p">))</span>
+        <span class="p">}</span>
+        
+<span class="p">}</span>
+</code></pre>
+</div>
+<h2 id="data-exploration">Data Exploration</h2>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>In Part 5, we will build a network graph of the locations serviced by SDMTS,
+and with this velocity data, we can get a quantitative measure of the quality
+of these connections (travel time, travel velocity) as a function of the other
+measurables (time of day, day of the week, month).</p>
+
+  </div>
+
+  <div class="date">
+    Written on July 21, 2017
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:wnan.pi.95@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/wnanpi95/SDMTS_Graph"><i class="svg-icon github"></i></a>
+
+
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>
