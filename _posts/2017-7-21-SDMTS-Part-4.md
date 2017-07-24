@@ -232,7 +232,43 @@ func calcVel(bus1: BusEntity, bus2: BusEntity) -> Double {
 }
 ```
 ## Data Exploration
+Like the earlier posts, I will only cover some of the major points, the details
+and the code can all be found in the notebook. This exploration will mostly
+just serve as a sanity check before we proceed with actually using the data.
 
+We are just going to look at one specfic trip, so we begin by isolating one trip
+from the data set. Let's plot this trips distance traveled against its
+timestamp:
+![alt text](dist_traveled-time-raw.jpg "Created with matplotlib")
+
+The horizontal axis is the unix timestamp, and the vertical is the miles
+traveled along the route (may put in axes on image at later edit). A couple
+issues are immediately obvious:
+* The first data point places the bus at the end of the route
+* Some of the data points place the bus at a smaller distance traveled than
+the previous recording.
+
+Let's investigate why this is the case. First, I will plot the bus's
+coordinates, along with it's route:
+
+![alt text](location-route.jpg "Created with matplotlib")
+
+Because this route is circular, the first point was probably mapped to the end
+of the route. Additionally, due to the folding of certain points on the route,
+some of the recording must have gotten recorded into early places too. Let's
+do a simple remedy of dropping every point that is not less than a point that
+comes after it. What we are left with is the following:
+
+![alt text](dist_traveled-time-clean.jpg "Created with matplotlib")
+
+Now let's also take a look at some information about the velocity:
+
+![alt text](velocity-time.jpg "Created with matplotlib")
+
+![alt text](velocity-location.jpg "Created with matplotlib and seaborn")
+
+Everything seems reasonable. I think we should be ready to proceed.
+TO DO: label axes and reupload images.
 ## Conclusion
 In Part 5, we will build a network graph of the locations serviced by SDMTS,
 and with this velocity data, we can get a quantitative measure of the quality
