@@ -8,5 +8,7 @@
 
 import Foundation
 
-print("Hello, World!")
+let myIO = IO(dictionaryPath: CommandLine.arguments[1] as NSString)
+let myStaticDict = StaticDictionaryCollection(resourcePath: myIO.dictionaryPath)
+myStaticDict.stop_times()
 
