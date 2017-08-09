@@ -11,7 +11,14 @@ import Foundation
 struct Shape {
     let latitude: Float
     let longitude: Float
-    let dist_travelled: Float
+    let dist_traveled: Float
+}
+
+struct ShapeSeq {
+    let latitude: Float
+    let longitude: Float
+    let dist_traveled: Float
+    let sequence: Int
 }
 
 struct Position {
@@ -32,7 +39,7 @@ func -(lhs: Position, rhs: Position) -> Position {
 func -(lhs: Shape, rhs: Shape) -> Shape {
     return Shape(latitude: lhs.latitude - rhs.latitude,
                  longitude: lhs.longitude - rhs.latitude,
-                 dist_travelled: lhs.dist_travelled - rhs.dist_travelled)
+                 dist_traveled: lhs.dist_traveled - rhs.dist_traveled)
 }
 
 func *(lhs: Shape, rhs: Shape) -> Float {

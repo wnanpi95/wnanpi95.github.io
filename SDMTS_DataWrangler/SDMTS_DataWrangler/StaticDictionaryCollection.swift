@@ -8,6 +8,12 @@
 
 import Foundation
 
+struct ShapeIndex {
+    let shape_id: String
+    let start_idx: Int
+    let stop_idx: Int
+}
+
 class StaticDictionaryCollection {
     
     let resourcePath: String
@@ -25,6 +31,9 @@ class StaticDictionaryCollection {
     // place_patterns.txt
     var route_directionTOplace_id_array: [RouteDirection: [String]]?
     
+    // stops.txt
+    var stop_idTOstop_position: [String: Position]?
+    
     // stop_times.txt
     var trip_idTOstop_id_array: [String: [String]]?
     
@@ -32,12 +41,48 @@ class StaticDictionaryCollection {
         self.resourcePath = resourcePath
     }
     
+    // shape_stopEdge.txt
+    var stop_edge_idTOshape_indices: [String: [ShapeIndex]]?
+    
+    // shapes_unique.txt
+    var shape_idTOshapeSeq_array: [String: [ShapeSeq]]?
+    
+    func shape_stopEdge() {
+        // MARK: iterating through shape_stopEdge.txt
+        let shapesPath = resourcePath+"shape_stopEdge.txt"
+        let shapesStringLines =
+            readFile(path: shapesPath)?.components(separatedBy: "\n")
+        let shapesCount = (shapesStringLines?.count)! - 1
+        
+        // * stop_edge_id -> shape_indices
+        stop_edge_idTOshape_indices = [:]
+        for i in 1..<shapesCount {
+            guard let shapesRow =
+                shapesStringLines?[i].components(separatedBy: ",") else {
+                    continue
+            }
+            
+            let shape_id      = shapesRow[0]
+            let startIdx      = Int(shapesRow[1])
+            let stopIdx       = Int(shapesRow[2])
+            let stop_edge_id  = shapesRow[3]
+            let shapeIndex    = ShapeIndex(shape_id: shape_id,
+                                             start_idx: startIdx!,
+                                             stop_idx: stopIdx!)
+            
+            if stop_edge_idTOshape_indices?[stop_edge_id] == nil {
+                stop_edge_idTOshape_indices?[stop_edge_id] = [shapeIndex]
+            }
+        }
+        // ******************************************************************//
+    }
+    
     func trips() {
         // MARK: iterating through trips.txt
         let tripsPath = resourcePath+"trips.txt"
         let tripsStringLines =
             readFile(path: tripsPath)?.components(separatedBy: "\r\n")
-        let tripsCount = (tripsStringLines?.count)! - 1
+        let tripsCount = (tripsStringLines?.count)!
         
         // * trip_id -> shape_id
         trip_idTOshape_id = [:]
@@ -51,6 +96,7 @@ class StaticDictionaryCollection {
             let trip_id = tripsRow[2]
             let direction = tripsRow[5]
             let shape_id = tripsRow[7]
+            
             trip_idTOshape_id?[trip_id] = shape_id
             
             let routeDirection = RouteDirection(route: route,
@@ -81,13 +127,47 @@ class StaticDictionaryCollection {
             let dist_traveled = Float(shapesRow[4])
             let shape = Shape(latitude: latitude!,
                               longitude: longitude!,
-                              dist_travelled: dist_traveled!)
+                              dist_traveled: dist_traveled!)
             
             if shape_idTOshapes_array?[shape_id] == nil {
                 shape_idTOshapes_array?[shape_id] = [shape]
-            } else if shape_idTOshapes_array?[shape_id]?.last?.dist_travelled
-                != shape.dist_travelled {
+            } else if shape_idTOshapes_array?[shape_id]?.last?.dist_traveled
+                != shape.dist_traveled {
                 shape_idTOshapes_array?[shape_id]?.append(shape)
+            }
+        }
+        // ******************************************************************//
+    }
+    
+    func shapes_unique() {
+        // MARK: iterating through shapes_unique.txt
+        let shapesPath = resourcePath+"shapes_unique.txt"
+        let shapesStringLines =
+            readFile(path: shapesPath)?.components(separatedBy: "\n")
+        let shapesCount = (shapesStringLines?.count)! - 1
+        
+        // * shape_id -> shapesSeq_array
+        shape_idTOshapeSeq_array = [:]
+        for i in 1..<shapesCount {
+            guard let shapesRow =
+                shapesStringLines?[i].components(separatedBy: ",") else {
+                    continue
+            }
+            
+            let shape_id      = shapesRow[0]
+            let latitude      = Float(shapesRow[1])
+            let longitude     = Float(shapesRow[2])
+            let sequence      = Int(shapesRow[3])
+            let dist_traveled = Float(shapesRow[4])
+            let shapeSeq = ShapeSeq(latitude: latitude!,
+                              longitude: longitude!,
+                              dist_traveled: dist_traveled!,
+                              sequence: sequence!)
+            
+            if shape_idTOshapeSeq_array?[shape_id] == nil {
+                shape_idTOshapeSeq_array?[shape_id] = [shapeSeq]
+            } else {
+                shape_idTOshapeSeq_array?[shape_id]?.append(shapeSeq)
             }
         }
         // ******************************************************************//
@@ -169,8 +249,62 @@ class StaticDictionaryCollection {
         }
     }
     
+    
+    func stops() {
+        //MARK: iterating through stops.txt
+        let stopsPath = resourcePath+"stops.txt"
+        let stopsStringLines =
+            readFile(path:stopsPath)?.components(separatedBy: "\r\n")
+        let stopsCount = (stopsStringLines?.count)! - 1
+        
+        stop_idTOstop_position = [:]
+        for i in 1..<stopsCount {
+            guard let stopsRow =
+                stopsStringLines?[i].components(separatedBy: ",") else {
+                    continue
+            }
+            
+            let stop_id = stopsRow[0]
+            let latitude = Float(stopsRow[2])
+            let longitude = Float(stopsRow[3])
+            let position = Position(latitude: latitude!, longitude: longitude!)
+            
+            stop_idTOstop_position?[stop_id] = position
+        }
+    }
 }
 
+func writeDuplicateFreeShapes(resource: StaticDictionaryCollection, output: String) {
+    let file: FileHandle? = FileHandle(forWritingAtPath: output)
+    
+    if file != nil {
+        let header = ("shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled\n" as NSString).data(using: String.Encoding.utf8.rawValue)
+        
+        file?.write(header!)
+        
+        for (shape_id, shapes_array) in resource.shape_idTOshapes_array! {
+            
+            for (index, shape) in shapes_array.enumerated() {
+            
+            let line = shape_id+","
+                + String(shape.latitude)+","
+                + String(shape.longitude)+","
+                + String(index)+","
+                + String(shape.dist_traveled)+"\n"
+            
+            let newLine = (line as NSString).data(using: String.Encoding.utf8.rawValue)
+            
+            file?.write(newLine!)
+            
+            }
+        }
+        
+        file?.closeFile()
+        
+    } else {
+        print("Ooops! Something went wrong!")
+    }
+}
 
 
 
