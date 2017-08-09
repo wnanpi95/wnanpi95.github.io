@@ -29,4 +29,8 @@
 <url>
 <loc>http://localhost:4000/</loc>
 </url>
+<url>
+<loc>http://localhost:4000/d3js-test/mycomponent.html</loc>
+<lastmod>2017-08-07T17:46:48-07:00</lastmod>
+</url>
 </urlset>
