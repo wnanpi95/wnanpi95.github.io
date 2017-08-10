@@ -184,6 +184,6 @@ class GTFS_feed_manager:
 feed_manager = GTFS_feed_manager()
 while 1:
     feed_manager.update()
-    dynamic_table.to_csv(path_or_buf=web_page_resource_path+"stop_edge_table_test.txt", index=False, na_rep='NaN')
+    dynamic_table.to_csv(path_or_buf=web_page_resource_path+"stop_edge_table.txt", index=False, na_rep='NaN')
     sleep(60)
 
