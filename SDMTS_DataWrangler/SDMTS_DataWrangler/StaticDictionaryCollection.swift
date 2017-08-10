@@ -47,6 +47,9 @@ class StaticDictionaryCollection {
     // shapes_unique.txt
     var shape_idTOshapeSeq_array: [String: [ShapeSeq]]?
     
+    //stop_edges.txt
+    var stop_edge_id_array: [String]?
+    
     func shape_stopEdge() {
         // MARK: iterating through shape_stopEdge.txt
         let shapesPath = resourcePath+"shape_stopEdge.txt"
@@ -102,6 +105,30 @@ class StaticDictionaryCollection {
             let routeDirection = RouteDirection(route: route,
                                                 direction: direction)
             shape_idTOroute_direction?[shape_id] = routeDirection
+        }
+        // ******************************************************************//
+    }
+    
+    func stop_edge() {
+        // MARK: iterating through stop_edge.txt
+        let stop_edgePath = resourcePath+"stop_edges.txt"
+        let stop_edgeStringLines =
+            readFile(path: stop_edgePath)?.components(separatedBy: "\n")
+        let stop_edgeCount = (stop_edgeStringLines?.count)!
+        
+        // * [stop_edge]
+        
+        stop_edge_id_array = []
+        for i in 1..<stop_edgeCount {
+            guard let stop_edgeRow =
+                stop_edgeStringLines?[i].components(separatedBy: ",") else {
+                    continue
+            }
+            
+            let stop_edge_id = stop_edgeRow[0]
+            
+            stop_edge_id_array?.append(stop_edge_id)
+            
         }
         // ******************************************************************//
     }
@@ -306,6 +333,36 @@ func writeDuplicateFreeShapes(resource: StaticDictionaryCollection, output: Stri
     }
 }
 
+func writeStopEdgeTable(resource: StaticDictionaryCollection, output: String) {
+    let file: FileHandle? = FileHandle(forWritingAtPath: output)
+    
+    if file != nil {
+        let header = ("stop_edge_id,hour,dow,v_avg\n" as NSString).data(using: String.Encoding.utf8.rawValue)
+        
+        file?.write(header!)
+        
+        let dow_array = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+        
+        for stop_edge_id in resource.stop_edge_id_array! {
+            for hour in 0..<24 {
+                for dow in dow_array {
+                    let line = stop_edge_id+","
+                        + String(hour)+","
+                        + dow+","
+                        + "NaN"+"\n"
+                    let newLine = (line as NSString).data(using: String.Encoding.utf8.rawValue)
+                    
+                    file?.write(newLine!)
+                }
+            }
+        }
+        
+        file?.closeFile()
+        
+    } else {
+        print("Ooops! Something went wrong!")
+    }
+}
 
 
 
