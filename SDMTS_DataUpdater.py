@@ -176,7 +176,6 @@ class GTFS_feed_manager:
                 if record_new[1] != record_old[1]:
                     self.record_swap(record_new, record_old)
                     self.active_trips[info[1]] = record_new
-                    print "swapped"
             else:
                 self.active_trips[info[1]] = record_new
 
@@ -184,7 +183,6 @@ class GTFS_feed_manager:
 
 feed_manager = GTFS_feed_manager()
 while 1:
-    print "round start"
     feed_manager.update()
     dynamic_table.to_csv(path_or_buf=web_page_resource_path+"stop_edge_table_test.txt", index=False, na_rep='NaN')
     sleep(60)
