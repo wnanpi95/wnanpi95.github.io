@@ -345,10 +345,10 @@ func writeStopEdgeTable(resource: StaticDictionaryCollection, output: String) {
         
         for stop_edge_id in resource.stop_edge_id_array! {
             for hour in 0..<24 {
-                for dow in dow_array {
+                for dow in 0..<7 {
                     let line = stop_edge_id+","
                         + String(hour)+","
-                        + dow+","
+                        + String(dow)+","
                         + "NaN"+"\n"
                     let newLine = (line as NSString).data(using: String.Encoding.utf8.rawValue)
                     

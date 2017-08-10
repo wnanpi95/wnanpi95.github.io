@@ -1,0 +1,2 @@
+﻿feed_publisher_name,feed_publisher_url,feed_lang,version_id,feed_version
+MTS,http://www.sdmts.com,EN,20170802,v10 - Padres and Metallica concert update

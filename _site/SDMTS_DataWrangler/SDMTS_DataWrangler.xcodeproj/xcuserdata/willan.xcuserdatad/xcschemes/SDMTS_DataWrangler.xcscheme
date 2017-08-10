@@ -61,6 +61,12 @@
             ReferencedContainer = "container:SDMTS_DataWrangler.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "/Users/willan/Desktop/github-page/wnanpi95.github.io/google_transit/"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
