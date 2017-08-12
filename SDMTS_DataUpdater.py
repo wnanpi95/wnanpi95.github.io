@@ -182,7 +182,12 @@ class GTFS_feed_manager:
 ##################################################################################################
 
 feed_manager = GTFS_feed_manager()
+count = 0
 while 1:
+    count = count + 1
+    if count >= 60:
+        os.system("bash data_push.sh")
+
     print "DO NOT EXIT"
     feed_manager.update()
     print "REALLY DO NOT EXIT!!!"
