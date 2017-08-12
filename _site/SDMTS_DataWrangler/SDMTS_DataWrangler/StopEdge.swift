@@ -269,6 +269,29 @@ func stop_edge_idTOshape_pts(resource: StaticDictionaryCollection) -> [String: [
                 let longitude = shape_array?[i].longitude
                 let position = Position(latitude: latitude!,
                                        longitude: longitude!)
+                
+                if i >= startIdx + 2 {
+                    let last = (returnDict[stop_edge_id]?.count)! - 1
+                    
+                    var dropped = false
+                    
+                    if abs(latitude! - (returnDict[stop_edge_id]?[last].latitude)!) > 0.001 {
+                        if abs(latitude! - (returnDict[stop_edge_id]?[last-1].latitude)!) > 0.001 {
+                            returnDict[stop_edge_id]?.removeLast()
+                            dropped = true
+                        }
+                    }
+                    
+                    if !dropped {
+                        if abs(longitude! - (returnDict[stop_edge_id]?[last].longitude)!) > 0.001{
+                            if abs(longitude! - (returnDict[stop_edge_id]?[last-1].longitude)!) > 0.001{
+                                returnDict[stop_edge_id]?.removeLast()
+                            }
+                        }
+                    }
+                    
+                }
+                
                 returnDict[stop_edge_id]?.append(position)
             }
         }

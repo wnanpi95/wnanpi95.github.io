@@ -35,8 +35,8 @@ writeShape_StopEdge(shape_idTOShapeStopEdges: shape_idTOShapeStopEdges,
 let stop_edgeTOshape_pts = stop_edge_idTOshape_pts(resource: myStaticDict)
 
 writeStopEdge_shapePtsJSON(stop_edge_idTOshape_pts: stop_edgeTOshape_pts, output: myIO.dictionaryPath+"stopEdge_shapes.json")
-//writeStopEdge_shapePts(stop_edge_idTOshape_pts: stop_edgeTOshape_pts,
-//                       output: myIO.dictionaryPath+"stopEdge_shapePts.txt")
+writeStopEdge_shapePts(stop_edge_idTOshape_pts: stop_edgeTOshape_pts,
+                        output: myIO.dictionaryPath+"stopEdge_shapePts.txt")
 
 
 

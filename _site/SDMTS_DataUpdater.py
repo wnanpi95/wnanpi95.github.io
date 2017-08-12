@@ -183,7 +183,11 @@ class GTFS_feed_manager:
 
 feed_manager = GTFS_feed_manager()
 while 1:
+    print "DO NOT EXIT"
     feed_manager.update()
-    dynamic_table.to_csv(path_or_buf=web_page_resource_path+"stop_edge_table.txt", index=False, na_rep='NaN')
+    print "REALLY DO NOT EXIT!!!"
+    dynamic_table.to_csv(path_or_buf=web_page_resource_path+"stop_edge_table_temp.txt", index=False, na_rep='NaN')
+    os.system("mv " +web_page_resource_path+"stop_edge_table_temp.txt "+web_page_resource_path+"stop_edge_table.txt")
+    print "OK TO EXIT"
     sleep(60)
 
