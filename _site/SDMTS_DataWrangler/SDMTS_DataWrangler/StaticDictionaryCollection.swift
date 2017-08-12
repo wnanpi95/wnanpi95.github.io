@@ -344,8 +344,8 @@ func writeStopEdgeTable(resource: StaticDictionaryCollection, output: String) {
         let dow_array = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
         
         for stop_edge_id in resource.stop_edge_id_array! {
-            for hour in 0..<24 {
-                for dow in 0..<7 {
+            for dow in 0..<7 {
+                for hour in 0..<24 {
                     let line = stop_edge_id+","
                         + String(hour)+","
                         + String(dow)+","

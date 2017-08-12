@@ -3,8 +3,13 @@ import gtfs_realtime_pb2
 import urllib
 import pandas as pd
 import datetime
+import numpy as np
+from time import sleep
 
+alpha = 0.1
 bbox = 0.001
+min_distance = 0.005
+
 context_data_path = "./SDMTS_context_data/"
 web_page_resource_path = "./d3js-test/"
 url = "https://realtime.sdmts.com/api/api/gtfs_realtime/vehicle-positions-for-agency/MTS.pb?key="
@@ -22,6 +27,7 @@ with open(context_data_path+"trip_idTOshape_id.txt", 'r') as f:
         trip_idTOshape_id[trip_id] = shape_id.rstrip('\n')
 
 shapes = pd.read_csv(context_data_path+"shapes_unique.txt")
+shape_idTOstop_edges = pd.read_csv(context_data_path+"shape_stopEdge.txt")
 dynamic_table = pd.read_csv(web_page_resource_path+"stop_edge_table.txt")
 ##################################################################################################
 
@@ -42,8 +48,8 @@ class GTFS_feed_manager:
         return raw_data
 
     def get_info(self, entity):
-        timestamp = entity.vehicle.timestamp
-        trip_id = entity.vehicle.trip.trip_id
+        timestamp = int(entity.vehicle.timestamp)
+        trip_id = str(entity.vehicle.trip.trip_id)
         latitude = entity.vehicle.position.latitude
         longitude = entity.vehicle.position.longitude
         return (timestamp, trip_id, latitude, longitude)
@@ -52,11 +58,14 @@ class GTFS_feed_manager:
         info_block = []
         for entity in raw_data.entity:
             info = self.get_info(entity)
+            if info[1] == "":
+                continue
             info_block.append(info)
+
         return info_block
 
-    ## NEEDS TO BE FIXED
     def get_shape_subset(self, trip_id):
+
         shape_id = str(trip_idTOshape_id[trip_id])
         shape_set = shapes.loc[shapes['shape_id'] == shape_id]
         return shape_set
@@ -73,11 +82,18 @@ class GTFS_feed_manager:
             if latSep < bbox:
                 if lonSep < bbox:
                     candidate_indices.append(index)
+
+        if not candidate_indices:
+            return pd.DataFrame()
         candidate_shape_set = shape_set.loc[shape_set.index.isin(candidate_indices)]
         return candidate_shape_set
 
     def get_shape_pt(self, info, candidate_shape_set):
-        shape_index = -1
+
+        if candidate_shape_set.empty:
+            return candidate_shape_set
+
+        shape_index = 0
         sepMin = 9999.9
 
         latitude = info[2]
@@ -103,59 +119,71 @@ class GTFS_feed_manager:
 
         distance_traveled = record_new[2].iloc[0]['shape_dist_traveled']\
                           - record_old[2].iloc[0]['shape_dist_traveled']
+        if distance_traveled < min_distance:
+            return
         time_duration = record_new[1] - record_old[1]
 
         timestamp = record_new[1]
 
         shape_id = record_old[2].iloc[0]['shape_id']
-        vel_avg = distance_traveled / time_duration
-        hour = datetime.datetime.fromtimestamp(timestamp).strftime('%H')
-        day = datetime.datetime.fromtimestamp(timestamp).weekday()
-        print hour
-        print day
+        start_idx = record_old[2].iloc[0]['shape_pt_sequence']
+        stop_idx = record_new[2].iloc[0]['shape_pt_sequence']
+        vel_avg = 60 * 60 * distance_traveled / time_duration
+        hour = int(datetime.datetime.fromtimestamp(timestamp).strftime('%H'))
+        day = int(datetime.datetime.fromtimestamp(timestamp).weekday())
+
+        stop_edges = shape_idTOstop_edges.loc[shape_idTOstop_edges['shape_id'] == shape_id]
+        affected_stop_edge_ids = []
+        for _, row in stop_edges.iterrows():
+            if row.start_idx < stop_idx and row.stop_idx > start_idx:
+                affected_stop_edge_ids.append(row.stop_edge_id)
+
+        affected_stop_edge_table = dynamic_table.loc[(dynamic_table['stop_edge_id'].isin(affected_stop_edge_ids))\
+                                                 & (dynamic_table['hour'] == hour)\
+                                                 & (dynamic_table['dow'] == day)]
+
+        for i, row in affected_stop_edge_table.iterrows():
+
+            if np.isnan(row.v_avg):
+                dynamic_table.set_value(i, 'v_avg', vel_avg)
+            else:
+                dynamic_table.set_value(i, 'v_avg', alpha*vel_avg + (1 - alpha)*row.v_avg)
 
     def update(self):
 
         # dump inactive trips if they don't show up on feed for 5 checks
-        for trip_id, trackee in self.active_trips.iteritems():
+        for trip_id, trackee in self.active_trips.items():
             trackee[0] = trackee[0] - 1
             if trackee[0] <= 0:
                 del self.active_trips[trip_id]
 
         feed = self.get_feed()
         info_block = self.get_info_block(feed)
+        for info in info_block:
+            timestamp = info[0]
+            shape_set = self.get_shape_subset(info[1])
+            if shape_set.empty:
+                continue
+            candidate_shape_set = self.get_candidate_shapes(info, shape_set)
+            shape_pt = self.get_shape_pt(info, candidate_shape_set)
 
-        # for info in block testing
-        info = info_block[0]
-        timestamp = info[0]
-        shape_set = self.get_shape_subset(info[1])
-        candidate_shape_set = self.get_candidate_shapes(info, shape_set)
-        shape_pt = self.get_shape_pt(info, candidate_shape_set)
+            if shape_pt.empty:
+                continue
+            else:
+                record_new = [5, timestamp, shape_pt]
+            if info[1] in self.active_trips:
+                record_old = self.active_trips[info[1]]
+                if record_new[1] != record_old[1]:
+                    self.record_swap(record_new, record_old)
+                    self.active_trips[info[1]] = record_new
+            else:
+                self.active_trips[info[1]] = record_new
 
-        if shape_pt.empty:
-            print "yew"
-            #continue
-        else:
-            record_new = (5, timestamp, shape_pt)
-
-        if info[1] in self.active_trips:
-            record_old = self.active_trips[info[1]]
-            #if record_new[1] != record_old[1]:
-            self.record_swap(record_new, record_old)
-            self.active_trips[info[1]] = record_new
-        else:
-            self.active_trips[info[1]] = record_new
-
-        if info[1] in self.active_trips:
-            record_old = self.active_trips[info[1]]
-            self.record_swap(record_new, record_old)
-            self.active_trips[info[1]] = record_new
 ##################################################################################################
 
 feed_manager = GTFS_feed_manager()
-feed_manager.update()
-
-
-
-
+while 1:
+    feed_manager.update()
+    dynamic_table.to_csv(path_or_buf=web_page_resource_path+"stop_edge_table.txt", index=False, na_rep='NaN')
+    sleep(60)
 

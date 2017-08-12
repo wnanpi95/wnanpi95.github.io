@@ -277,6 +277,58 @@ func stop_edge_idTOshape_pts(resource: StaticDictionaryCollection) -> [String: [
     return returnDict
 }
 
+let entryStartFirst = "\n\t\t{\n"
+let entryStart = ",\n\t\t{\n"
+let entryEnd = "\t\t}"
+
+func writeStopEdge_shapePtsJSON(stop_edge_idTOshape_pts: [String: [Position]],
+                            output: String) {
+    let file: FileHandle? = FileHandle(forWritingAtPath: output)
+    
+    if file != nil {
+        
+        file?.write(("{\n" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+        
+        for (stop_edge_id, shape_pt_array) in stop_edge_idTOshape_pts {
+            
+            file?.write(("\t\""+stop_edge_id+"\": [" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+            
+            var first = true
+            
+            for shape_pt in shape_pt_array {
+                
+                if first {
+                    first = false
+                    file?.write((entryStartFirst as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                } else {
+                    file?.write((entryStart as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                }
+                
+                let entry = "\t\t\t\"shape_pt_lat\": "+String(shape_pt.latitude)
+                        + ",\n\t\t\t\"shape_pt_lon\": "+String(shape_pt.longitude)+"\n"
+                
+                
+                
+                file?.write((entry as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                
+                
+                file?.write((entryEnd as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                
+            }
+            
+            first = true
+            file?.write(("\n\t],\n" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+        }
+        
+        file?.write(("}" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+        
+        file?.closeFile()
+        
+    } else {
+        print("Ooops! Something went wrong!")
+    }
+}
+
 func writeStopEdge_shapePts(stop_edge_idTOshape_pts: [String: [Position]],
                          output: String) {
     let file: FileHandle? = FileHandle(forWritingAtPath: output)

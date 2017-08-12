@@ -269,12 +269,87 @@ func stop_edge_idTOshape_pts(resource: StaticDictionaryCollection) -> [String: [
                 let longitude = shape_array?[i].longitude
                 let position = Position(latitude: latitude!,
                                        longitude: longitude!)
+                
+                if i >= startIdx + 2 {
+                    let last = (returnDict[stop_edge_id]?.count)! - 1
+                    
+                    var dropped = false
+                    
+                    if abs(latitude! - (returnDict[stop_edge_id]?[last].latitude)!) > 0.001 {
+                        if abs(latitude! - (returnDict[stop_edge_id]?[last-1].latitude)!) > 0.001 {
+                            returnDict[stop_edge_id]?.removeLast()
+                            dropped = true
+                        }
+                    }
+                    
+                    if !dropped {
+                        if abs(longitude! - (returnDict[stop_edge_id]?[last].longitude)!) > 0.001{
+                            if abs(longitude! - (returnDict[stop_edge_id]?[last-1].longitude)!) > 0.001{
+                                returnDict[stop_edge_id]?.removeLast()
+                            }
+                        }
+                    }
+                    
+                }
+                
                 returnDict[stop_edge_id]?.append(position)
             }
         }
     }
     
     return returnDict
+}
+
+let entryStartFirst = "\n\t\t{\n"
+let entryStart = ",\n\t\t{\n"
+let entryEnd = "\t\t}"
+
+func writeStopEdge_shapePtsJSON(stop_edge_idTOshape_pts: [String: [Position]],
+                            output: String) {
+    let file: FileHandle? = FileHandle(forWritingAtPath: output)
+    
+    if file != nil {
+        
+        file?.write(("{\n" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+        
+        for (stop_edge_id, shape_pt_array) in stop_edge_idTOshape_pts {
+            
+            file?.write(("\t\""+stop_edge_id+"\": [" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+            
+            var first = true
+            
+            for shape_pt in shape_pt_array {
+                
+                if first {
+                    first = false
+                    file?.write((entryStartFirst as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                } else {
+                    file?.write((entryStart as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                }
+                
+                let entry = "\t\t\t\"shape_pt_lat\": "+String(shape_pt.latitude)
+                        + ",\n\t\t\t\"shape_pt_lon\": "+String(shape_pt.longitude)+"\n"
+                
+                
+                
+                file?.write((entry as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                
+                
+                file?.write((entryEnd as NSString).data(using: String.Encoding.utf8.rawValue)!)
+                
+            }
+            
+            first = true
+            file?.write(("\n\t],\n" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+        }
+        
+        file?.write(("}" as NSString).data(using: String.Encoding.utf8.rawValue)!)
+        
+        file?.closeFile()
+        
+    } else {
+        print("Ooops! Something went wrong!")
+    }
 }
 
 func writeStopEdge_shapePts(stop_edge_idTOshape_pts: [String: [Position]],
